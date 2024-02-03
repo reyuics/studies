@@ -1,0 +1,62 @@
+"""
+Weather App - Python Project
+
+Instructions for Testing:
+1. Sign up on the OpenWeatherMap website: https://openweathermap.org/
+2. Generate an API key in your account settings.
+3. Insert your API key in the marked place below to run the code.
+
+"""
+
+import requests
+
+# Getting geolocation data
+def get_geolocation_data(city_name, api_key):
+    geocoding_api_url = f'http://api.openweathermap.org/geo/1.0/direct?q={city_name}&appid={api_key}'
+    geo_response = requests.get(geocoding_api_url)
+
+    if geo_response.status_code == 200 and geo_response.json():
+        geo_data = {
+            'name': geo_response.json()[0]['name'],
+            'country': geo_response.json()[0]['country'],
+            'lat': geo_response.json()[0]['lat'],
+            'lon': geo_response.json()[0]['lon']
+        }
+        return geo_data
+    else:
+        print(f"Error getting geolocation data. Status code: {geo_response.status_code}")
+        return None
+
+# Getting weather data
+def get_weather_data(lat, lon, api_key):
+    api_call_url = f'https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}'
+    weather_response = requests.get(api_call_url)
+
+    if weather_response.status_code == 200:
+        weather_data = {
+            'weather_description': weather_response.json()['weather'][0]['description'],
+            'temperature': weather_response.json()['main']['temp'],
+            'humidity': weather_response.json()['main']['humidity'],
+            'wind_speed': weather_response.json()['wind']['speed']
+        }
+        return weather_data
+    else:
+        print(f"Error getting weather data. Status code: {weather_response.status_code}")
+        return None
+
+def kelvin_to_celsius(kelvin):
+    return kelvin - 273.15
+
+# Replace 'YOUR API KEY' with your actual API key
+API_KEY = 'YOUR API KEY'
+city_name = input('Enter a city name: ')
+
+geo_data = get_geolocation_data(city_name, API_KEY)
+
+if geo_data:
+    weather_data = get_weather_data(geo_data['lat'], geo_data['lon'], API_KEY)
+
+    if weather_data:
+        print(f'Temperature in {city_name.capitalize()}: {round(kelvin_to_celsius(weather_data["temperature"]))}°C')
+        print(f'Wind speed: {weather_data["wind_speed"]} m/s')
+        print(f'Weather Description: {weather_data["weather_description"]}')
